@@ -71,7 +71,7 @@
         ]
       },
       {
-        id: 'seoul_hocance', name: '서울 럭셔리 호캉스 (Seoul)', tags: ['city', 'healing'],
+        id: 'seoul_hocance', name: '서울 럭셔 호캉스 (Seoul)', tags: ['city', 'healing'],
         image: 'https://images.unsplash.com/photo-1542314831-c6a4d14d837e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
         desc: '도심 속 5성급 호텔에서 누리는 완벽하고 프라이빗한 휴식',
         course: [
@@ -115,21 +115,7 @@
     // --- API 설정 ---
     // ⚠️ 외부 깃허브 사이트에 올리실 때는 아래 따옴표 안에 본인의 Gemini API 키를 넣으셔야 AI 기능이 작동합니다.
     // 무료 발급처: https://aistudio.google.com/app/apikey
-    const apiKey = "curl "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent" \
-  -H 'Content-Type: application/json' \
-  -H 'X-goog-api-key: AIzaSyC_gNiT5wXZy3xU4bYDo0ChSJi5OyVFd0I' \
-  -X POST \
-  -d '{
-    "contents": [
-      {
-        "parts": [
-          {
-            "text": "Explain how AI works in a few words"
-          }
-        ]
-      }
-    ]
-  }'"; 
+    const apiKey = "AIzaSyC_gNiT5wXZy3xU4bYDo0ChSJi5OyVFd0I";
 
     // 재시도 로직이 포함된 Fetch 헬퍼
     const fetchWithRetry = async (url, options, retries = 5) => {
