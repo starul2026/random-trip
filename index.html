@@ -115,7 +115,21 @@
     // --- API 설정 ---
     // ⚠️ 외부 깃허브 사이트에 올리실 때는 아래 따옴표 안에 본인의 Gemini API 키를 넣으셔야 AI 기능이 작동합니다.
     // 무료 발급처: https://aistudio.google.com/app/apikey
-    const apiKey = "AIzaSyC_gNiT5wXZy3xU4bYDo0ChSJi5OyVFd0I"; 
+    const apiKey = "curl "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent" \
+  -H 'Content-Type: application/json' \
+  -H 'X-goog-api-key: AIzaSyC_gNiT5wXZy3xU4bYDo0ChSJi5OyVFd0I' \
+  -X POST \
+  -d '{
+    "contents": [
+      {
+        "parts": [
+          {
+            "text": "Explain how AI works in a few words"
+          }
+        ]
+      }
+    ]
+  }'"; 
 
     // 재시도 로직이 포함된 Fetch 헬퍼
     const fetchWithRetry = async (url, options, retries = 5) => {
