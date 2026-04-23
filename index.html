@@ -1,0 +1,595 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  MapPin, 
+  Compass, 
+  RefreshCw, 
+  Palmtree, 
+  Mountain, 
+  Building, 
+  Activity, 
+  Coffee, 
+  Map, 
+  Plane,
+  ChevronRight,
+  Cloud,
+  Globe,
+  Sparkles,
+  Search,
+  AlertCircle,
+  CalendarDays
+} from 'lucide-react';
+
+// --- 기존 국내/해외 하드코딩 데이터 (생략 없이 유지) ---
+const DOMESTIC_DESTINATIONS = [
+  {
+    id: 'jeju', name: '제주도 (Jeju)', tags: ['sea', 'healing'],
+    image: 'https://images.unsplash.com/photo-1590253232148-9b8b0e8979e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    desc: '에메랄드 빛 바다를 보며 완벽한 여유를 즐길 수 있는 환상의 섬',
+    course: [
+      { time: '10:00', text: '오션뷰 카페에서 여유로운 모닝 커피' },
+      { time: '12:30', text: '탁 트인 바다를 보며 즐기는 해물라면' },
+      { time: '15:00', text: '조용한 해안도로 드라이브 및 산책' },
+      { time: '18:00', text: '노을 지는 바닷가에서 흑돼지 바베큐' }
+    ]
+  },
+  {
+    id: 'busan', name: '부산 해운대 (Busan)', tags: ['sea', 'activity'],
+    image: 'https://images.unsplash.com/photo-1588668214407-6ea9a6d8c272?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    desc: '활기찬 바다와 다이나믹한 즐길 거리가 가득한 해양 도시',
+    course: [
+      { time: '10:00', text: '해운대 해변 열차(블루라인파크) 탑승' },
+      { time: '13:00', text: '전통 시장에서 즐기는 돼지국밥과 씨앗호떡' },
+      { time: '15:00', text: '송정 해수욕장에서 서핑 체험' },
+      { time: '19:00', text: '광안리 수변공원 야경과 함께하는 회센터 먹방' }
+    ]
+  },
+  {
+    id: 'pyeongchang', name: '강원도 평창 (Pyeongchang)', tags: ['mountain', 'healing'],
+    image: 'https://images.unsplash.com/photo-1519181245277-cffeb31da2e3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    desc: '맑은 공기와 푸른 숲 속에서 몸과 마음을 치유하는 시간',
+    course: [
+      { time: '10:00', text: '대관령 양떼목장 산책' },
+      { time: '13:00', text: '메밀 막국수와 전병으로 건강한 점심' },
+      { time: '15:00', text: '월정사 전나무 숲길 피톤치드 산책' },
+      { time: '19:00', text: '별빛 쏟아지는 산장/펜션에서 휴식' }
+    ]
+  },
+  {
+    id: 'danyang', name: '충북 단양 (Danyang)', tags: ['mountain', 'activity'],
+    image: 'https://images.unsplash.com/photo-1628045610815-51ff6a7cf02a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    desc: '아찔한 높이에서 즐기는 짜릿한 액티비티의 성지',
+    course: [
+      { time: '10:00', text: '만천하 스카이워크에서 절경 감상' },
+      { time: '12:30', text: '단양 구경시장에서 마늘 만두, 닭강정 투어' },
+      { time: '14:30', text: '패러글라이딩으로 하늘 날기 체험' },
+      { time: '18:00', text: '남한강 야경을 보며 즐기는 쏘가리 매운탕' }
+    ]
+  },
+  {
+    id: 'seoul_hocance', name: '서울 럭셔리 호캉스 (Seoul)', tags: ['city', 'healing'],
+    image: 'https://images.unsplash.com/photo-1542314831-c6a4d14d837e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    desc: '도심 속 5성급 호텔에서 누리는 완벽하고 프라이빗한 휴식',
+    course: [
+      { time: '15:00', text: '호텔 체크인 및 애프터눈 티 세트 즐기기' },
+      { time: '17:00', text: '실내 수영장 및 스파에서 피로 풀기' },
+      { time: '19:30', text: '호텔 파인다이닝 또는 룸서비스 디너' },
+      { time: '22:00', text: '시티뷰를 바라보며 반신욕과 와인 한 잔' }
+    ]
+  },
+  {
+    id: 'seoul_tour', name: '서울 핫플 투어 (Seoul)', tags: ['city', 'activity'],
+    image: 'https://images.unsplash.com/photo-1538485395224-32980072b251?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    desc: '트렌디한 카페, 쇼핑, 문화가 끊이지 않는 잠들지 않는 도시',
+    course: [
+      { time: '11:00', text: '성수동 팝업스토어 및 소품샵 투어' },
+      { time: '13:00', text: '웨이팅 필수! 유명 핫플 맛집 도장깨기' },
+      { time: '16:00', text: '경복궁 한복 체험 및 북촌 한옥마을 산책' },
+      { time: '20:00', text: '이태원 또는 홍대에서 즐기는 화려한 나이트라이프' }
+    ]
+  }
+];
+
+const INTERNATIONAL_DESTINATIONS = [
+  { id: 'japan', name: '일본 오사카', emoji: '🇯🇵', image: 'https://images.unsplash.com/photo-1590559899731-a382839e5549?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', desc: '맛있는 음식과 화려한 네온사인이 반겨주는 먹방 여행의 성지', course: [{ time: '10:00', text: '오사카성 관람' }, { time: '13:00', text: '도톤보리 점심' }, { time: '16:00', text: '우메다 쇼핑' }, { time: '19:00', text: '이자카야 저녁' }] },
+  { id: 'vietnam', name: '베트남 다낭', emoji: '🇻🇳', image: 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', desc: '아름다운 해변과 저렴한 물가로 즐기는 완벽한 가성비 휴양', course: [{ time: '10:00', text: '미케 해변 수영' }, { time: '13:00', text: '현지 식당 점심' }, { time: '15:00', text: '호이안 산책' }, { time: '19:00', text: '야시장 저녁식사' }] },
+  { id: 'thailand', name: '태국 방콕', emoji: '🇹🇭', image: 'https://images.unsplash.com/photo-1583417657208-d2188ab6bc84?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', desc: '눈부신 사원과 트렌디한 도심이 공존하는 배낭여행자의 천국', course: [{ time: '10:00', text: '왕궁 사원 관람' }, { time: '13:00', text: '카오산 로드 팟타이' }, { time: '16:00', text: '태국 전통 마사지' }, { time: '19:00', text: '루프탑 바 칵테일' }] },
+  { id: 'hawaii', name: '미국 하와이', emoji: '🇺🇸', image: 'https://images.unsplash.com/photo-1542259009477-d625272157b7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', desc: '알로하! 눈부신 태양과 파도 소리가 반겨주는 지상 낙원', course: [{ time: '09:00', text: '와이키키 해변 일광욕' }, { time: '12:00', text: '포케 보울 점심' }, { time: '15:00', text: '해안도로 드라이브' }, { time: '18:30', text: '선셋 크루즈 저녁' }] },
+  { id: 'paris', name: '프랑스 파리', emoji: '🇫🇷', image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', desc: '예술과 낭만이 흐르는 거리에서 즐기는 우아하고 여유로운 일상', course: [{ time: '10:00', text: '노천 카페 크루아상' }, { time: '13:00', text: '루브르 미술관 관람' }, { time: '16:00', text: '몽마르뜨 언덕 산책' }, { time: '20:00', text: '센 강 에펠탑 야경' }] },
+  { id: 'swiss', name: '스위스', emoji: '🇨🇭', image: 'https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', desc: '만년설이 덮인 알프스 산맥 대자연 속에서의 경이로운 휴식', course: [{ time: '09:00', text: '융프라우요흐 등반' }, { time: '12:00', text: '만년설 위 따뜻한 커피' }, { time: '15:00', text: '툰 호수 유람선' }, { time: '19:00', text: '전통 치즈 폰듀 저녁' }] }
+];
+
+const QUESTION_POOLS = {
+  view: [
+    { question: '어떤 풍경이 눈 앞에 펼쳐졌으면 좋겠나요?', options: [{ text: '가슴 뻥 뚫리는 시원한 바다', tag: 'sea', icon: <Palmtree className="w-6 h-6 mb-2" /> }, { text: '피톤치드 가득한 푸른 산과 숲', tag: 'mountain', icon: <Mountain className="w-6 h-6 mb-2" /> }, { text: '화려하고 세련된 도시의 야경', tag: 'city', icon: <Building className="w-6 h-6 mb-2" /> }] }
+  ],
+  style: [
+    { question: '당신의 여행 스타일은?', options: [{ text: '에너지 넘치게 걷고 즐기는 관광&액티비티', tag: 'activity', icon: <Activity className="w-6 h-6 mb-2" /> }, { text: '바쁘게 움직이기 싫어! 여유로운 힐링과 휴식', tag: 'healing', icon: <Coffee className="w-6 h-6 mb-2" /> }] }
+  ]
+};
+
+// --- API 설정 ---
+const apiKey = ""; // 런타임에 주입됨
+
+// 재시도 로직이 포함된 Fetch 헬퍼
+const fetchWithRetry = async (url, options, retries = 5) => {
+  const delays = [1000, 2000, 4000, 8000, 16000];
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await fetch(url, options);
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      if (i === retries - 1) throw error;
+      await new Promise(resolve => setTimeout(resolve, delays[i]));
+    }
+  }
+};
+
+export default function App() {
+  const [currentView, setCurrentView] = useState('home'); 
+  const [currentQIndex, setCurrentQIndex] = useState(0);
+  const [activeQuestions, setActiveQuestions] = useState([]);
+  const [userTags, setUserTags] = useState([]);
+  const [result, setResult] = useState(null);
+  
+  // AI 모드 전용 상태
+  const [aiInput, setAiInput] = useState('');
+  const [aiLoadingMsg, setAiLoadingMsg] = useState('');
+  const [apiError, setApiError] = useState('');
+
+  // 날짜 선택 상태 (기본값: 오늘 ~ 내일)
+  const getInitialDate = (addDays = 0) => {
+    const d = new Date();
+    d.setDate(d.getDate() + addDays);
+    return d.toISOString().split('T')[0];
+  };
+  const [startDate, setStartDate] = useState(getInitialDate(0));
+  const [endDate, setEndDate] = useState(getInitialDate(1));
+
+  // 기간(일수) 계산 함수
+  const calculateDays = (start, end) => {
+    if (!start || !end) return 1;
+    const s = new Date(start);
+    const e = new Date(end);
+    const diffTime = e - s;
+    if (diffTime < 0) return 1;
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+  };
+
+  const handleStartDateChange = (e) => {
+    setStartDate(e.target.value);
+    if (e.target.value > endDate) setEndDate(e.target.value);
+  };
+
+  const handleEndDateChange = (e) => {
+    setEndDate(e.target.value);
+    if (e.target.value < startDate) setStartDate(e.target.value);
+  };
+
+  // --- 기존 하드코딩 로직 ---
+  const getRandomQuestions = () => [QUESTION_POOLS.view[0], QUESTION_POOLS.style[0]];
+
+  const startQuiz = () => { setActiveQuestions(getRandomQuestions()); setUserTags([]); setCurrentQIndex(0); setCurrentView('quiz'); };
+  
+  const startRandom = () => {
+    setCurrentView('loading');
+    setTimeout(() => { setResult(DOMESTIC_DESTINATIONS[Math.floor(Math.random() * DOMESTIC_DESTINATIONS.length)]); setCurrentView('result'); }, 1500);
+  };
+  
+  const startInternational = () => setCurrentView('international_select');
+  
+  const handleOptionSelect = (tag) => {
+    const newTags = [...userTags, tag];
+    if (currentQIndex < activeQuestions.length - 1) { setUserTags(newTags); setCurrentQIndex(currentQIndex + 1); }
+    else { calculateDomesticResult(newTags); }
+  };
+
+  const calculateDomesticResult = (tags) => {
+    setCurrentView('loading');
+    setTimeout(() => {
+      let bestMatch = DOMESTIC_DESTINATIONS[0];
+      let maxScore = -1;
+      for (const dest of DOMESTIC_DESTINATIONS) {
+        let score = 0;
+        dest.tags.forEach(t => { if (tags.includes(t)) score++; });
+        if (score > maxScore) { maxScore = score; bestMatch = dest; }
+      }
+      setResult(bestMatch); setCurrentView('result');
+    }, 1500);
+  };
+
+  const handleCountrySelect = (country) => { setCurrentView('loading'); setTimeout(() => { setResult(country); setCurrentView('result'); }, 1000); };
+
+  const goHome = () => { setCurrentView('home'); setResult(null); setApiError(''); setAiInput(''); };
+
+  // --- AI 통합 무제한 로직 (날짜/축제 연동) ---
+  const generateAICourse = async (destinationStr = null) => {
+    setCurrentView('ai_loading');
+    setApiError('');
+    
+    try {
+      if (destinationStr) {
+        setAiLoadingMsg(`'${destinationStr}' 여행 코스를 짜고 있습니다...`);
+      } else {
+        setAiLoadingMsg('어느 멋진 곳으로 떠날까요? AI가 목적지를 고르는 중입니다... 🎲');
+      }
+
+      const tripDays = calculateDays(startDate, endDate);
+      const dateContext = `여행 기간은 ${startDate} 부터 ${endDate} 까지 (총 ${tripDays}일)야. 이 기간에 해당 지역에서 열리는 실제 축제나 행사, 혹은 계절 특색이 있다면 일정에 꼭 반영해서 짜줘.`;
+      
+      // 1. 텍스트 생성 (Gemini API)
+      const prompt = destinationStr 
+        ? `"${destinationStr}" 지역에 대한 상세한 여행 코스를 짜줘. ${dateContext}` 
+        : `세계 어느 곳이든 좋으니 잘 알려지지 않은 멋진 여행지를 랜덤으로 하나 골라서 여행 코스를 짜줘. ${dateContext}`;
+
+      const textPayload = {
+        contents: [{ parts: [{ text: prompt }] }],
+        systemInstruction: { parts: [{ text: "너는 최고의 여행 플래너야. 사용자가 설정한 날짜와 기간을 기반으로, 그 기간의 지역 축제나 계절적 특성을 고려해 일정(days 배열)을 짜서 JSON으로 응답해." }] },
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "OBJECT",
+            properties: {
+              name: { type: "STRING", description: "여행지 이름 (예: 대한민국 속초)" },
+              desc: { type: "STRING", description: "해당 여행지와 기간을 소개하는 감성적인 1~2문장" },
+              days: {
+                type: "ARRAY",
+                items: {
+                  type: "OBJECT",
+                  properties: {
+                    day: { type: "STRING", description: "예: 1일차 (10월 12일)" },
+                    festivals: { type: "STRING", description: "이 날짜에 포함된 지역 축제나 특별 행사 요약 (없으면 해당 지역의 이 날짜 추천 팁)" },
+                    schedule: {
+                      type: "ARRAY",
+                      items: {
+                        type: "OBJECT",
+                        properties: {
+                          time: { type: "STRING", description: "시간 (예: 10:00)" },
+                          text: { type: "STRING", description: "그 시간의 일정 요약" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      };
+
+      const textUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+      const textResponse = await fetchWithRetry(textUrl, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(textPayload)
+      });
+      
+      const aiDataStr = textResponse.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!aiDataStr) throw new Error("AI 텍스트 응답 오류");
+      const aiData = JSON.parse(aiDataStr);
+
+      // 2. 이미지 생성 (Imagen API)
+      if (destinationStr) {
+        setAiLoadingMsg(`'${aiData.name}'의 풍경을 AI가 그리고 있습니다...`);
+      } else {
+        setAiLoadingMsg(`비밀스러운 미지의 여행지 풍경을 그려내고 있습니다... 과연 어디일까요? 🤫`);
+      }
+      
+      const imgPayload = {
+        instances: { prompt: `Beautiful travel photography of ${aiData.name}, scenic, highly detailed, vivid colors, 4k` },
+        parameters: { sampleCount: 1 }
+      };
+      
+      const imgUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
+      const imgResponse = await fetchWithRetry(imgUrl, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(imgPayload)
+      });
+      
+      const imageBase64 = imgResponse.predictions?.[0]?.bytesBase64Encoded;
+      const imageUrl = imageBase64 ? `data:image/png;base64,${imageBase64}` : 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'; // fallback
+
+      // 결과 세팅
+      setResult({
+        id: 'ai_generated',
+        isAi: true,
+        name: aiData.name,
+        desc: aiData.desc,
+        image: imageUrl,
+        days: aiData.days // Multi-day 지원
+      });
+      
+      setCurrentView('result');
+
+    } catch (err) {
+      console.error(err);
+      setApiError('AI 통신에 실패했습니다. 잠시 후 다시 시도해주세요.');
+    }
+  };
+
+
+  // --- 렌더링 영역 ---
+  const renderContent = () => {
+    // 1. 홈 화면
+    if (currentView === 'home') {
+      const tripDays = calculateDays(startDate, endDate);
+
+      return (
+        <div className="max-w-md w-full bg-white/90 backdrop-blur-md rounded-[2.5rem] shadow-2xl shadow-sky-900/10 overflow-hidden p-8 text-center border border-white relative z-10 my-8">
+          <div className="w-16 h-16 bg-sky-100 text-sky-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
+            <Plane className="w-8 h-8 transform rotate-12" />
+          </div>
+          <h1 className="text-3xl font-extrabold text-sky-900 mb-2">어디로 떠날까요?</h1>
+          <p className="text-sky-600 mb-6 font-medium text-sm">푸른 하늘 너머, 당신의 다음 여행지</p>
+
+          <div className="space-y-5">
+            
+            {/* 날짜 선택 섹션 (NEW) */}
+            <div className="bg-sky-50/70 p-4 rounded-3xl border border-sky-100 shadow-sm text-left relative">
+              <div className="flex items-center text-sky-800 font-bold mb-3">
+                <CalendarDays className="w-5 h-5 mr-2 text-sky-500" />
+                여행 일정 선택
+              </div>
+              <div className="flex space-x-3 mb-2">
+                <div className="flex-1">
+                  <label className="block text-[11px] font-bold text-sky-500 mb-1">가는 날</label>
+                  <input 
+                    type="date" 
+                    value={startDate} 
+                    onChange={handleStartDateChange} 
+                    className="w-full px-3 py-2 rounded-xl border border-sky-200 focus:outline-none focus:ring-2 focus:ring-sky-400 bg-white text-sm font-medium text-gray-700"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-[11px] font-bold text-sky-500 mb-1">오는 날</label>
+                  <input 
+                    type="date" 
+                    value={endDate} 
+                    onChange={handleEndDateChange} 
+                    className="w-full px-3 py-2 rounded-xl border border-sky-200 focus:outline-none focus:ring-2 focus:ring-sky-400 bg-white text-sm font-medium text-gray-700"
+                  />
+                </div>
+              </div>
+              <div className="text-right text-xs text-sky-600 font-bold bg-white/60 inline-block float-right px-2 py-1 rounded-md">
+                총 {tripDays}일 일정
+              </div>
+              <div className="clear-both"></div>
+            </div>
+
+            {/* AI 무제한 섹션 */}
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-5 rounded-3xl space-y-3 border border-purple-100 shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-2 opacity-20"><Sparkles className="w-16 h-16 text-purple-500" /></div>
+              
+              <div className="flex items-center justify-center space-x-2 text-purple-600 mb-2">
+                <Sparkles className="w-4 h-4" />
+                <span className="text-sm font-bold tracking-wider">AI 무제한 탐험 (축제 자동매칭)</span>
+              </div>
+              
+              <div className="flex space-x-2">
+                <input 
+                  type="text" 
+                  value={aiInput}
+                  onChange={(e) => setAiInput(e.target.value)}
+                  placeholder="예: 강원도 속초, 로마..."
+                  className="flex-1 px-4 py-3 rounded-xl border border-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white/80 text-sm font-medium z-10"
+                />
+                <button 
+                  onClick={() => { if(aiInput.trim()) generateAICourse(aiInput); }}
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 rounded-xl transition-all shadow-md z-10"
+                >
+                  <Search className="w-5 h-5" />
+                </button>
+              </div>
+
+              <button 
+                onClick={() => generateAICourse(null)}
+                className="w-full flex items-center justify-center bg-white hover:bg-purple-100 text-purple-700 py-3 rounded-xl transition-all border border-purple-200 font-bold shadow-sm z-10 relative"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                지구상 아무데나 AI 랜덤 추천
+              </button>
+            </div>
+
+            <div className="border-t border-sky-100 border-dashed"></div>
+
+            {/* 기존 고속 추천 섹션 */}
+            <div className="space-y-3">
+              <span className="text-[11px] font-bold text-sky-500 tracking-wider">초고속 기본 추천 (저장된 1일 코스)</span>
+              <div className="flex space-x-2">
+                <button onClick={startQuiz} className="flex-1 bg-sky-500 hover:bg-sky-600 text-white py-3 rounded-xl font-bold shadow-md transition-all text-xs">
+                  국내 취향
+                </button>
+                <button onClick={startRandom} className="flex-1 bg-white hover:bg-sky-50 text-sky-600 py-3 rounded-xl font-bold border border-sky-100 shadow-sm transition-all text-xs">
+                  국내 랜덤
+                </button>
+                <button onClick={startInternational} className="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 py-3 rounded-xl font-bold border border-indigo-100 shadow-sm transition-all text-xs">
+                  해외 선택
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      );
+    }
+
+    // 2. 국내 퀴즈 화면
+    if (currentView === 'quiz' && activeQuestions.length > 0) {
+      const question = activeQuestions[currentQIndex];
+      const progress = ((currentQIndex) / activeQuestions.length) * 100;
+
+      return (
+        <div className="max-w-md w-full bg-white/90 backdrop-blur-md rounded-[2.5rem] shadow-2xl shadow-sky-900/10 p-8 border border-white relative z-10">
+          <div className="w-full bg-sky-100 rounded-full h-3 mb-8 shadow-inner overflow-hidden">
+            <div className="bg-sky-400 h-full rounded-full transition-all duration-500 relative" style={{ width: `${progress}%` }}>
+              <div className="absolute top-0 right-0 bottom-0 left-0 bg-white/20 animate-pulse"></div>
+            </div>
+          </div>
+          <div className="text-center mb-8">
+            <span className="text-sm font-bold text-sky-500 tracking-wider bg-sky-50 px-3 py-1 rounded-full">QUESTION {currentQIndex + 1}</span>
+            <h2 className="text-2xl font-bold text-sky-900 mt-4 break-keep leading-tight">{question.question}</h2>
+          </div>
+          <div className="space-y-4">
+            {question.options.map((opt, idx) => (
+              <button key={idx} onClick={() => handleOptionSelect(opt.tag)} className="w-full flex flex-col items-center justify-center p-6 bg-white hover:bg-sky-50 border-2 border-sky-50 hover:border-sky-300 rounded-2xl transition-all shadow-sm hover:shadow-md group">
+                <div className="text-sky-300 group-hover:text-sky-500 transition-colors group-hover:scale-110 transform duration-300">{opt.icon}</div>
+                <span className="font-bold text-sky-800 group-hover:text-sky-600">{opt.text}</span>
+              </button>
+            ))}
+          </div>
+          <button onClick={goHome} className="mt-8 w-full text-sky-400 hover:text-sky-600 text-sm font-medium underline underline-offset-4 transition-colors">처음으로 돌아가기</button>
+        </div>
+      );
+    }
+
+    // 3. 해외 국가 선택 화면
+    if (currentView === 'international_select') {
+      return (
+        <div className="max-w-md w-full bg-white/90 backdrop-blur-md rounded-[2.5rem] shadow-2xl shadow-sky-900/10 p-6 border border-white relative z-10">
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 bg-indigo-100 text-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4"><Globe className="w-8 h-8" /></div>
+            <h2 className="text-2xl font-extrabold text-indigo-900 mb-2">어느 나라로 갈까요?</h2>
+          </div>
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            {INTERNATIONAL_DESTINATIONS.map((country) => (
+              <button key={country.id} onClick={() => handleCountrySelect(country)} className="flex flex-col items-center justify-center p-4 bg-white border border-indigo-50 rounded-2xl shadow-sm hover:shadow-md hover:border-indigo-200 hover:bg-indigo-50 transition-all group">
+                <span className="text-3xl mb-2 group-hover:scale-110 transition-transform">{country.emoji}</span>
+                <span className="font-bold text-gray-700 group-hover:text-indigo-700 text-sm">{country.name.split(' ')[0]}</span>
+              </button>
+            ))}
+          </div>
+          <button onClick={goHome} className="w-full text-gray-400 hover:text-gray-600 text-sm font-medium underline underline-offset-4 transition-colors">이전 화면으로 돌아가기</button>
+        </div>
+      );
+    }
+
+    // 4. 로딩 화면 (일반 & AI)
+    if (currentView === 'loading' || currentView === 'ai_loading') {
+      const isAi = currentView === 'ai_loading';
+      return (
+        <div className="text-center relative z-10 bg-white/70 backdrop-blur-md p-10 rounded-[3rem] shadow-xl border border-white/50 max-w-sm w-full">
+          <div className="relative w-24 h-24 mx-auto mb-6">
+            {isAi ? <Sparkles className="absolute inset-0 w-24 h-24 text-purple-300 animate-pulse" /> : <Cloud className="absolute inset-0 w-24 h-24 text-sky-200 animate-pulse" />}
+            <Plane className={`absolute inset-0 w-12 h-12 m-auto animate-bounce transform rotate-12 ${isAi ? 'text-purple-600' : 'text-sky-600'}`} />
+          </div>
+          <h2 className={`text-2xl font-extrabold mb-2 ${isAi ? 'text-purple-900' : 'text-sky-900'}`}>
+            {isAi ? 'AI 여행 플래너 작동 중...' : '하늘을 날아 탐색 중...'}
+          </h2>
+          <p className="text-gray-600 font-medium h-6">
+            {isAi ? aiLoadingMsg : '여행 코스를 불러오고 있어요!'}
+          </p>
+
+          {apiError && (
+            <div className="mt-6 bg-red-50 p-4 rounded-xl flex items-center justify-center text-red-600 text-sm font-bold">
+              <AlertCircle className="w-5 h-5 mr-2" />
+              {apiError}
+              <button onClick={goHome} className="ml-4 underline">돌아가기</button>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // 5. 결과 화면
+    if (currentView === 'result' && result) {
+      const isDomestic = DOMESTIC_DESTINATIONS.some(d => d.id === result.id);
+      const isAi = result.isAi;
+      const themeColor = isAi ? 'purple' : (isDomestic ? 'sky' : 'indigo');
+      
+      // 하드코딩된 기존 1일치 데이터를 days 배열 구조로 통일하여 렌더링
+      const daysData = result.days || [{
+        day: '1일차 (기본 코스)',
+        festivals: null,
+        schedule: result.course
+      }];
+      
+      return (
+        <div className={`max-w-md w-full bg-white/95 backdrop-blur-md rounded-[2.5rem] shadow-2xl shadow-${themeColor}-900/10 overflow-hidden relative z-10 border border-white my-8`}>
+          
+          <div className="h-72 w-full relative shrink-0">
+            <img src={result.image} alt={result.name} className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent"></div>
+            <div className="absolute bottom-0 left-0 p-6 text-white w-full">
+              <span className={`text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider mb-3 inline-block shadow-sm bg-${themeColor}-500/90 flex items-center w-max`}>
+                {isAi && <Sparkles className="w-3 h-3 mr-1" />}
+                {isAi ? `AI 생성 맞춤 코스 (${calculateDays(startDate, endDate)}일)` : (isDomestic ? '국내 추천 목적지' : '해외 추천 목적지')}
+              </span>
+              <h2 className="text-3xl font-extrabold drop-shadow-md">{result.name}</h2>
+            </div>
+          </div>
+
+          <div className="p-6">
+            <p className={`text-lg font-medium leading-relaxed mb-6 p-4 rounded-2xl text-${themeColor}-800 bg-${themeColor}-50`}>
+              "{result.desc}"
+            </p>
+
+            <div className="space-y-4 mb-8">
+              {daysData.map((dayObj, dIdx) => (
+                <div key={dIdx} className="bg-white border border-gray-100 shadow-sm rounded-2xl p-5">
+                  <h3 className={`font-extrabold mb-4 flex items-center text-lg text-${themeColor}-900 border-b border-gray-100 pb-3`}>
+                    <CalendarDays className={`w-5 h-5 mr-2 text-${themeColor}-500`} />
+                    {dayObj.day}
+                  </h3>
+                  
+                  {/* AI가 찾아온 축제나 행사 정보가 있을 때 뱃지 표시 */}
+                  {dayObj.festivals && (
+                    <div className="bg-amber-50 text-amber-700 text-[13px] font-bold px-3 py-2.5 rounded-xl mb-5 flex items-start border border-amber-100/50">
+                      <Sparkles className="w-4 h-4 mr-1.5 mt-0.5 flex-shrink-0 text-amber-500" />
+                      <span className="leading-snug">{dayObj.festivals}</span>
+                    </div>
+                  )}
+
+                  <div className="space-y-5">
+                    {dayObj.schedule.map((item, idx) => (
+                      <div key={idx} className="flex group">
+                        <div className="flex flex-col items-center mr-4">
+                          <div className={`w-3 h-3 rounded-full mt-1.5 group-hover:scale-125 transition-transform shadow-sm bg-${themeColor}-400`}></div>
+                          {idx !== dayObj.schedule.length - 1 && (<div className={`w-0.5 h-full my-1 bg-${themeColor}-100`}></div>)}
+                        </div>
+                        <div>
+                          <span className={`text-sm font-bold px-2 py-0.5 rounded-md inline-block mb-1 text-${themeColor}-600 bg-${themeColor}-50`}>
+                            {item.time}
+                          </span>
+                          <p className="text-gray-800 font-medium">{item.text}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex space-x-3">
+              <button onClick={goHome} className="flex-1 bg-gray-50 hover:bg-gray-100 text-gray-700 py-3.5 rounded-xl font-bold transition-colors border border-gray-200">
+                홈으로
+              </button>
+              
+              {isAi ? (
+                <button onClick={() => generateAICourse(null)} className="flex-[2] bg-purple-600 hover:bg-purple-700 text-white py-3.5 rounded-xl font-bold flex items-center justify-center transition-all shadow-lg shadow-purple-200">
+                  <Sparkles className="w-5 h-5 mr-2" /> 다른 곳 AI 추천
+                </button>
+              ) : isDomestic ? (
+                <button onClick={startRandom} className="flex-[2] bg-sky-500 hover:bg-sky-600 text-white py-3.5 rounded-xl font-bold flex items-center justify-center transition-all shadow-lg shadow-sky-200">
+                  <RefreshCw className="w-5 h-5 mr-2" /> 국내 랜덤 추천
+                </button>
+              ) : (
+                <button onClick={startInternational} className="flex-[2] bg-indigo-500 hover:bg-indigo-600 text-white py-3.5 rounded-xl font-bold flex items-center justify-center transition-all shadow-lg shadow-indigo-200">
+                  <Globe className="w-5 h-5 mr-2" /> 다른 나라 선택
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-sky-300 via-sky-100 to-white flex flex-col items-center justify-center p-4 relative overflow-x-hidden selection:bg-sky-200">
+      <Cloud className="absolute top-10 -left-10 w-48 h-48 text-white/40" />
+      <Cloud className="absolute top-32 -right-16 w-64 h-64 text-white/30" />
+      <Cloud className="absolute bottom-20 left-10 w-32 h-32 text-sky-200/30" />
+      <Cloud className="absolute bottom-10 -right-5 w-40 h-40 text-sky-100/50" />
+      {renderContent()}
+    </div>
+  );
+}
